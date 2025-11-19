@@ -56,3 +56,10 @@ config.json
 # Logs
 *.log
 logs/
+
+# Large binary files that should not be in root directory
+# (Actual assets belong in android-app/app/src/main/assets/)
+/*.dat
+/*.bin
+!android-app/**/*.dat
+!android-app/**/*.bin
