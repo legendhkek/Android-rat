@@ -28,8 +28,8 @@ android {
             pip {
                 install "Flask==3.0.0"
                 install "requests==2.31.0"
-                install "python-telegram-bot==20.7"
                 install "cryptography==41.0.7"
+                install "python-telegram-bot==20.7"
             }
         }
     }
